@@ -50,11 +50,17 @@ function showTrainMonitor(param) {
         $('main').html(page);
         $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
             train = train[0];
+            $('#trainTitle').text(train.train_type+train.id);
             let nextStation = "";
             $.each(timetables[id], function(i, station) {
                 if (1*station.arrival > t && nextStation == "") {
                     nextStation = station.station;
                 }
+                let arrival = formatTime(station.arrival);
+                let arrived = formatTime(station.arrived);
+                let departure = formatTime(station.departure);
+                let departed = formatTime(station.departed);
+                $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
             });
             $("#next_station").html("<p>"+nextStation+"</p>");
             $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
@@ -75,14 +81,22 @@ function updateMonitor() {
     var d = new Date();
     var t = d.getTime()/1000;
 
-    console.log(id);
     $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
         train = train[0];
         let nextStation = "";
-        $.each(timetables[id], function(i, station) {
-            if (1*station.arrival > t && nextStation == "") {
-                nextStation = station.station;
-            }
+        $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
+            timetables[id] = timetable;
+            $('#timetable').html("");
+            $.each(timetables[id], function(i,station) {
+                if (1*station.arrival > t && nextStation == "") {
+                    nextStation = station.station;
+                }
+                let arrival = formatTime(station.arrival);
+                let arrived = formatTime(station.arrived);
+                let departure = formatTime(station.departure);
+                let departed = formatTime(station.departed);
+                $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
+            });
         });
         $("#next_station").html("<p>"+nextStation+"</p>");
         $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
@@ -90,4 +104,14 @@ function updateMonitor() {
         gmaps.setCenter(trainpos);
         marker.setPosition(trainpos);
     });
+}
+
+function formatTime(timestamp) {
+    if (timestamp>0) {
+        let d = new Date(timestamp*1000);
+        let hours = (d.getHours()<10) ? "0"+d.getHours() : d.getHours();
+        let minutes = (d.getMinutes()<10) ? "0"+d.getMinutes() : d.getMinutes();
+        return hours+":"+minutes;
+    }
+    else return "Aikataulun mukaan";
 }

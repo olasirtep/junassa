@@ -74,7 +74,7 @@ function getStops($id) {
     /*
     *   TODO: get timetable for train
     */
-    $stmt = $db->prepare("SELECT * FROM timetables WHERE id = ?");
+    $stmt = $db->prepare("SELECT * FROM timetables WHERE id = ? ORDER BY arrival");
     $stmt->bind_param("i",$id);
     $stmt->execute();
 
