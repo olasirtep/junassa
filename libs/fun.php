@@ -81,13 +81,13 @@ function getStops($id) {
     return generateJSON($stmt->get_result());
 }
 
-function getTrainInfo($id) {
+function getTrainInfo($param) {
     global $db;
     /*
     *   TODO: get information about the train from 'junat'-table
     */
-    $stmt = $db->prepare("SELECT * FROM trains WHERE id = ?");
-    $stmt->bind_param("i",$id);
+    $stmt = $db->prepare("SELECT * FROM `trains` WHERE `id` = ?");
+    $stmt->bind_param("i",$param);
     $stmt->execute();
 
     return generateJSON($stmt->get_result());
