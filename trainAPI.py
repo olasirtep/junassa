@@ -158,7 +158,14 @@ def update() :
 				arrivalTime = False
 				departedTime = False
 				arrivedTime = False
-			stationName = stations[station["stationShortCode"]]
+			try:
+				stationName = stations[station["stationShortCode"]]
+			except KeyError:
+				fetchMeta()
+				try:
+					stationName = stations[station["stationShortCode"]]
+				except KeyError:
+					stationName = "Unknown station"
 			arrivalTime = station["scheduledTime"] if station["type"] == "ARRIVAL" else arrivalTime
 			departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
 			arrivedTime = station.get('actualTime', "") if station["type"] == "ARRIVAL" else arrivedTime
