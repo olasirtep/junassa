@@ -15,6 +15,8 @@ function generateJSON($result) {
     $json = substr($json,0,-1);
     $json .= ']';
 
+    $json = ($json == ']') ? '{"error":"empty response"}' : $json;
+    
     return $json;
 }
 

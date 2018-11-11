@@ -24,21 +24,24 @@ function searchT() {
     var d = new Date();
     var t = d.getTime()/1000;
     $.getJSON("get.php?a=getTrainsByName&p="+$('#query').val(), function(data) {
-        $('main').html("");
-        $.each(data, function(i, train) {
-            trains[train.id] = train;
-            $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
-                let nextStation = "";
-                timetables[train.id] = timetable;
-                $.each(timetable, function(i, station) {
-                    if (1*station.arrival > t && nextStation == "") {
-                        nextStation = station.station;
-                    }
-                    console.log(station.arrival + ' : '+t);
+        if (data.error == "empty response") alert('Palvelinvirhe');
+        else {
+            $('main').html("");
+            $.each(data, function(i, train) {
+                trains[train.id] = train;
+                $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
+                    let nextStation = "";
+                    timetables[train.id] = timetable;
+                    $.each(timetable, function(i, station) {
+                         if (1*station.arrival > t && nextStation == "") {
+                             nextStation = station.station;
+                        }
+                         console.log(station.arrival + ' : '+t);
+                    });
+                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p class="small">Seuraava asema: '+nextStation+', nopeus: '+train.speed+'km/h</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
                 });
-                $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p class="small">Seuraava asema: '+nextStation+', nopeus: '+train.speed+'km/h</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
             });
-        });
+        }
     });
 }
 

@@ -165,7 +165,7 @@ def update() :
 				try:
 					stationName = stations[station["stationShortCode"]]
 				except KeyError:
-					stationName = "Unknown station"
+					continue
 			arrivalTime = station["scheduledTime"] if station["type"] == "ARRIVAL" else arrivalTime
 			departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
 			arrivedTime = station.get('actualTime', "") if station["type"] == "ARRIVAL" else arrivedTime
