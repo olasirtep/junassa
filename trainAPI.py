@@ -23,8 +23,8 @@ def fetchMeta() :
 
 
 	for station in stationdata :
-		#print(station["stationShortCode"], "=", station["stationName"])
-		stations.update({station["stationShortCode"]:station["stationName"]})
+		stationName = station["stationName"].split()
+		stations.update({station["stationShortCode"]:stationName[0]})
 		stationLongitude.update({station["stationShortCode"]:station["longitude"]})
 		stationLatitude.update({station["stationShortCode"]:station["latitude"]})
 

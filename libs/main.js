@@ -2,23 +2,38 @@ var trains = {};
 var timetables = {};
 var id = 0;
 var gmaps, marker;
+var updater;
+var user;
 
 $(function() {
-    var user = $.cookie("uid");
-    if (user) {
-
-    }
-    else {
-        $.get("templates/search.html", function(data) {
-            $('main').html(data);
-            $("#query").keypress(function() {
-                setTimeout(function() {
-                    $("#query").val($("#query").val().toUpperCase());
-                }, 100);
-            });
-        });
-    }
+    showSearchScreen();
 });
+
+function showSearchScreen() {
+    if ($.cookie('currentID')) showTrainMonitor($.cookie('currentID'));
+    else {
+        user = $.cookie("uid");
+        if (user) {
+
+        }
+        else {
+            $.get("templates/search.html", function(data) {
+                $('main').html(data);
+                $("#query").keypress(function() {
+                    setTimeout(function() {
+                        $("#query").val($("#query").val().toUpperCase());
+                    }, 100);
+                });
+            });
+        }
+    }
+}
+
+function back() {
+    clearInterval(updater);
+    $.removeCookie('currentID');
+    showSearchScreen();
+}
 
 function searchT() {
     var d = new Date();
@@ -47,6 +62,7 @@ function searchT() {
 
 function showTrainMonitor(param) {
     id = param;
+    $.cookie('currentID', id);
     var d = new Date();
     var t = d.getTime()/1000;
     $.get("templates/trainMonitor.html", function(page) {
@@ -64,7 +80,12 @@ function showTrainMonitor(param) {
                     let arrived = formatTime(station.arrived);
                     let departure = formatTime(station.departure);
                     let departed = formatTime(station.departed);
-                    $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
+                    let timetableString = '<div class="timetableRow"><h2>'+station.station+'</h2><br><p>';
+                    timetableString += (arrived) ? 'Saapunut: '+arrived : (arrival) ? 'Saapuu: '+arrival : '';
+                    timetableString += '<br>';
+                    timetableString += (departed) ? 'Lähti: '+departed : (departure) ? 'Lähtee: '+departure : '';
+                    timetableString += '</div>';
+                    $("#timetable").append(timetableString);
                 }
             });
             $("#next_station").html("<p>"+nextStation+"</p>");
@@ -77,7 +98,7 @@ function showTrainMonitor(param) {
             // The marker, positioned at Uluru
             marker = new google.maps.Marker({position: trainpos, map: gmaps});
 
-            setInterval(updateMonitor, 5000);
+            updater = setInterval(updateMonitor, 5000);
         });
     });
 }
@@ -101,8 +122,12 @@ function updateMonitor() {
                     let arrived = formatTime(station.arrived);
                     let departure = formatTime(station.departure);
                     let departed = formatTime(station.departed);
-
-                    $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
+                    let timetableString = '<div class="timetableRow"><h2>'+station.station+'</h2><br><p>';
+                    timetableString += (arrived) ? 'Saapunut: '+arrived : (arrival) ? 'Saapuu: '+arrival : '';
+                    timetableString += '<br>';
+                    timetableString += (departed) ? 'Lähti: '+departed : (departure) ? 'Lähtee: '+departure : '';
+                    timetableString += '</div>';
+                    $("#timetable").append(timetableString);
                 }
             });
         });
@@ -121,5 +146,5 @@ function formatTime(timestamp) {
         let minutes = (d.getMinutes()<10) ? "0"+d.getMinutes() : d.getMinutes();
         return hours+":"+minutes;
     }
-    else return "Aikataulun mukaan";
+    else return false;
 }
