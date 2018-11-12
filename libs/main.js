@@ -56,14 +56,16 @@ function showTrainMonitor(param) {
             $('#trainTitle').text(train.train_type+train.id);
             let nextStation = "";
             $.each(timetables[id], function(i, station) {
-                if (1*station.arrival > t && nextStation == "") {
-                    nextStation = station.station;
+                if (station.train_stopping == 1) {
+                    if (1*station.arrival > t && nextStation == "") {
+                        nextStation = station.station;
+                    }
+                    let arrival = formatTime(station.arrival);
+                    let arrived = formatTime(station.arrived);
+                    let departure = formatTime(station.departure);
+                    let departed = formatTime(station.departed);
+                    $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
                 }
-                let arrival = formatTime(station.arrival);
-                let arrived = formatTime(station.arrived);
-                let departure = formatTime(station.departure);
-                let departed = formatTime(station.departed);
-                $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
             });
             $("#next_station").html("<p>"+nextStation+"</p>");
             $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
@@ -90,15 +92,18 @@ function updateMonitor() {
         $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
             timetables[id] = timetable;
             $('#timetable').html("");
-            $.each(timetables[id], function(i,station) {
-                if (1*station.arrival > t && nextStation == "") {
-                    nextStation = station.station;
+            $.each(timetables[id], function(i, station) {
+                if (station.train_stopping == 1) {
+                    if (1*station.arrival > t && nextStation == "") {
+                        nextStation = station.station;
+                    }
+                    let arrival = formatTime(station.arrival);
+                    let arrived = formatTime(station.arrived);
+                    let departure = formatTime(station.departure);
+                    let departed = formatTime(station.departed);
+
+                    $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
                 }
-                let arrival = formatTime(station.arrival);
-                let arrived = formatTime(station.arrived);
-                let departure = formatTime(station.departure);
-                let departed = formatTime(station.departed);
-                $("#timetable").append('<div class="timetableRow"><h2>'+station.station+'</h2><br><p>Saapuu: '+arrival+' ('+arrived+')<br>Lähtee: '+departure+' ('+departed+')</div>');
             });
         });
         $("#next_station").html("<p>"+nextStation+"</p>");

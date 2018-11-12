@@ -120,8 +120,9 @@ def init() :
 				departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
-				sql = "INSERT INTO `timetables`(`id`, `station`, `arrival`, `departure`, `arrived`, `departed`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, arrivalTime, departureTime, arrivedTime, departedTime, order, longitude, latitude, initTime)
+				trainStopping = station["trainStopping"]
+				sql = "INSERT INTO `timetables`(`id`, `station`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+				val = (trainID, stationName, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, order, longitude, latitude, initTime)
 				order += 1
 				cursor.execute(sql,val)
 				db.commit()
@@ -178,8 +179,9 @@ def update() :
 				departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
-				sql = "INSERT INTO `timetables`(`id`, `station`, `arrival`, `departure`, `arrived`, `departed`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, arrivalTime, departureTime, arrivedTime, departedTime, order, longitude, latitude,updateTime)
+				trainStopping = station["trainStopping"]
+				sql = "INSERT INTO `timetables`(`id`, `station`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+				val = (trainID, stationName, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, order, longitude, latitude,updateTime)
 				order += 1
 				cursor.execute(sql,val)
 				db.commit()
