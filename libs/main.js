@@ -8,6 +8,7 @@ var destination = false;
 
 $(function() {
     showSearchScreen();
+    if ($.cookie('currentDST')) destination = $.cookie('currentDST');
 });
 
 function showSearchScreen() {
@@ -33,6 +34,7 @@ function showSearchScreen() {
 function back() {
     clearInterval(updater);
     $.removeCookie('currentID');
+    $.removeCookie('currentDST');
     showSearchScreen();
 }
 
@@ -71,6 +73,7 @@ function showTrainMonitor(param) {
     var t = d.getTime()/1000;
     $.get("templates/trainMonitor.html", function(page) {
         $('main').html(page);
+        if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
         $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
             train = train[0];
             $('#trainTitle').text(train.train_type+train.id);
@@ -88,11 +91,16 @@ function showTrainMonitor(param) {
             updater = setInterval(updateMonitor, 5000);
         });
     });
+    $('#backUp').click(function () {
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
 }
 
 function updateMonitor() {
     var d = new Date();
     var t = d.getTime()/1000;
+
+    if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
 
     $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
         train = train[0];
@@ -127,9 +135,19 @@ function getTimeTables(train) {
                 timetableString += '<br>';
                 timetableString += (departed) ? 'Lähti: '+departed+departureDiff : (departure) ? 'Lähtee: '+departure : '';
                 timetableString += (!departed && station.departure_diff>0) ? " <b>("+fixedDeparture+")</b>" : "";
-                timetableString += '<button class="trainPicker" onclick="chooseDestination('+station.station+')">Valitse määränpää</button>'
+                timetableString += (!destination) ? '<button class="trainPicker" onclick="setDestination(`'+station.station+'`)">Valitse määränpää</button>' : "";
                 timetableString += '</div>';
                 $("#timetable").append(timetableString);
+                if (station.station == destination) {
+                    let destinationString = "<p class='small info'>Määränpää:</p>";
+                    let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
+                    destinationString += '<p class="info">'+destination+'</p>';
+                    destinationString += '<p class="small">'+distance+" km</p>";
+                    destinationString += '<p id="DSTArrival" class="info">'+fixedArrival+'</p>';
+                    $('#destination').html(destinationString);
+                    if (station.arrival_diff > 0) $("#DSTArrival").css('color', 'red');
+                    else $("#DSTArrival").css('color', 'green');
+                }
                 if (!arrived && nextStation == "" && station.order>0) {
                     nextStation = station.station;
                     let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
@@ -186,5 +204,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 function DegreesToRadians(degrees) {
     return degrees * (Math.PI/180);
+}
+
+function setDestination(dest) {
+    destination = dest;
+    $.cookie('currentDST', dest);
+    $("html, body").animate({ scrollTop: 0 }, "slow");
+    updateMonitor();
 }
 
