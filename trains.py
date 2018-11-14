@@ -17,7 +17,9 @@ if __name__ == "__main__" :
 		if (time.time() - t >= 5) :
 			interval = 5
 			t = time.time()
-			update()
-			print("Update took",time.time()-t,"seconds")
-			#print("Waiting 5 seconds to next update run...")
+			try :
+				update()
+				print("Update took",time.time()-t,"seconds")
+			except urllib.error.HTTPError :
+				print("!!! Update failed with HTTPError!")
 	db.close()

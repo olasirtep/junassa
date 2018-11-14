@@ -73,22 +73,25 @@ function showTrainMonitor(param) {
             let nextStation = "";
             $.each(timetables[id], function(i, station) {
                 if (station.train_stopping == 1) {
-                    if (1*station.arrival > t && nextStation == "") {
-                        nextStation = station.station;
-                    }
                     let arrival = formatTime(station.arrival);
                     let arrived = formatTime(station.arrived);
                     let departure = formatTime(station.departure);
                     let departed = formatTime(station.departed);
-                    let timetableString = '<div class="timetableRow"><h2>'+station.station+'</h2><br><p>';
+                    let timetableString = '<div class="timetableRow"><h2>'+station.station;
+                    timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
                     timetableString += (arrived) ? 'Saapunut: '+arrived : (arrival) ? 'Saapuu: '+arrival : '';
                     timetableString += '<br>';
                     timetableString += (departed) ? 'Lähti: '+departed : (departure) ? 'Lähtee: '+departure : '';
                     timetableString += '</div>';
                     $("#timetable").append(timetableString);
+                    if (!arrived && nextStation == "" && station.order>0) {
+                        nextStation = station.station;
+                        let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
+                        $("#next_station").html("<p class='small' style='margin-top:20px;'>Seuraavana:</p><p style='margin-top:20px;'>"+nextStation+"</p><p class='small'>"+distance+" km</p><p style='margin-top:20px'>"+arrival+"</p>");
+                    }
+                    else if (nextStation != "" && arrived) nextStation = "";
                 }
             });
-            $("#next_station").html("<p>"+nextStation+"</p>");
             $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
             // The location of Uluru
             let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
@@ -115,23 +118,26 @@ function updateMonitor() {
             $('#timetable').html("");
             $.each(timetables[id], function(i, station) {
                 if (station.train_stopping == 1) {
-                    if (1*station.arrival > t && nextStation == "") {
-                        nextStation = station.station;
-                    }
                     let arrival = formatTime(station.arrival);
                     let arrived = formatTime(station.arrived);
                     let departure = formatTime(station.departure);
                     let departed = formatTime(station.departed);
-                    let timetableString = '<div class="timetableRow"><h2>'+station.station+'</h2><br><p>';
+                    let timetableString = '<div class="timetableRow"><h2>'+station.station;
+                    timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
                     timetableString += (arrived) ? 'Saapunut: '+arrived : (arrival) ? 'Saapuu: '+arrival : '';
                     timetableString += '<br>';
                     timetableString += (departed) ? 'Lähti: '+departed : (departure) ? 'Lähtee: '+departure : '';
                     timetableString += '</div>';
                     $("#timetable").append(timetableString);
+                    if (!arrived && nextStation == "" && station.order>0) {
+                        nextStation = station.station;
+                        let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
+                        $("#next_station").html("<p class='small' style='margin-top:20px;'>Seuraavana:</p><p style='margin-top:20px;'>"+nextStation+"</p><p class='small'>"+distance+" km</p><p style='margin-top:20px'>"+arrival+"</p>");
+                    }
+                    else if (nextStation != "" && arrived) nextStation = "";
                 }
             });
         });
-        $("#next_station").html("<p>"+nextStation+"</p>");
         $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
         let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
         gmaps.setCenter(trainpos);
@@ -147,4 +153,24 @@ function formatTime(timestamp) {
         return hours+":"+minutes;
     }
     else return false;
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    var ED = 6371e3;
+    var latRad1 = DegreesToRadians(lat1);
+    var latRad2 = DegreesToRadians(lat2);
+    var diffLat = DegreesToRadians(lat2-lat1);
+    var diffLon = DegreesToRadians(lon2-lon1);
+
+    var a = Math.sin(diffLat/2) * Math.sin(diffLat/2) +
+            Math.cos(latRad1) * Math.cos(latRad2) *
+            Math.sin(diffLon/2) * Math.sin(diffLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    // Return distance in kilometers with .1 precision
+    return Math.floor((ED * c)/100)/10;
+}
+
+function DegreesToRadians(degrees) {
+    return degrees * (Math.PI/180);
 }
