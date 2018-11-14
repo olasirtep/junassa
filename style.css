@@ -97,6 +97,11 @@ div.timetableRow {
     background: rgba(77,156,56, 0.05);
 }
 
+div.timetableRow b {
+    color: red;
+    font-weight: normal;
+}
+
 #map {
     width: 95%;
     background: #7D9C98;

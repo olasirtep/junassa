@@ -46,14 +46,17 @@ function searchT() {
                 trains[train.id] = train;
                 $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
                     let nextStation = "";
+                    let lateSTR = "";
                     timetables[train.id] = timetable;
                     $.each(timetable, function(i, station) {
-                         if (1*station.arrival > t && nextStation == "") {
-                             nextStation = station.station;
+                        if (station.arrived == 0 && nextStation == "" && station.order>0) {
+                            nextStation = station.station;
+                            lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff+" minuuttia." : "";
+                            console.log(station.arrival_diff);
                         }
-                         console.log(station.arrival + ' : '+t);
+                        else if (nextStation != "" && station.arrived != 0) nextStation = "";
                     });
-                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p class="small">Seuraava asema: '+nextStation+', nopeus: '+train.speed+'km/h</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
+                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p class="small">Seuraava asema: '+nextStation+', nopeus: '+train.speed+'km/h'+lateSTR+'</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
                 });
             });
         }
@@ -70,28 +73,7 @@ function showTrainMonitor(param) {
         $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
             train = train[0];
             $('#trainTitle').text(train.train_type+train.id);
-            let nextStation = "";
-            $.each(timetables[id], function(i, station) {
-                if (station.train_stopping == 1) {
-                    let arrival = formatTime(station.arrival);
-                    let arrived = formatTime(station.arrived);
-                    let departure = formatTime(station.departure);
-                    let departed = formatTime(station.departed);
-                    let timetableString = '<div class="timetableRow"><h2>'+station.station;
-                    timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
-                    timetableString += (arrived) ? 'Saapunut: '+arrived : (arrival) ? 'Saapuu: '+arrival : '';
-                    timetableString += '<br>';
-                    timetableString += (departed) ? 'Lähti: '+departed : (departure) ? 'Lähtee: '+departure : '';
-                    timetableString += '</div>';
-                    $("#timetable").append(timetableString);
-                    if (!arrived && nextStation == "" && station.order>0) {
-                        nextStation = station.station;
-                        let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
-                        $("#next_station").html("<p class='small' style='margin-top:20px;'>Seuraavana:</p><p style='margin-top:20px;'>"+nextStation+"</p><p class='small'>"+distance+" km</p><p style='margin-top:20px'>"+arrival+"</p>");
-                    }
-                    else if (nextStation != "" && arrived) nextStation = "";
-                }
-            });
+            getTimeTables(train);
             $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
             // The location of Uluru
             let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
@@ -112,36 +94,50 @@ function updateMonitor() {
 
     $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
         train = train[0];
-        let nextStation = "";
-        $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
-            timetables[id] = timetable;
-            $('#timetable').html("");
-            $.each(timetables[id], function(i, station) {
-                if (station.train_stopping == 1) {
-                    let arrival = formatTime(station.arrival);
-                    let arrived = formatTime(station.arrived);
-                    let departure = formatTime(station.departure);
-                    let departed = formatTime(station.departed);
-                    let timetableString = '<div class="timetableRow"><h2>'+station.station;
-                    timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
-                    timetableString += (arrived) ? 'Saapunut: '+arrived : (arrival) ? 'Saapuu: '+arrival : '';
-                    timetableString += '<br>';
-                    timetableString += (departed) ? 'Lähti: '+departed : (departure) ? 'Lähtee: '+departure : '';
-                    timetableString += '</div>';
-                    $("#timetable").append(timetableString);
-                    if (!arrived && nextStation == "" && station.order>0) {
-                        nextStation = station.station;
-                        let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
-                        $("#next_station").html("<p class='small' style='margin-top:20px;'>Seuraavana:</p><p style='margin-top:20px;'>"+nextStation+"</p><p class='small'>"+distance+" km</p><p style='margin-top:20px'>"+arrival+"</p>");
-                    }
-                    else if (nextStation != "" && arrived) nextStation = "";
-                }
-            });
-        });
+        getTimeTables(train);
         $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
         let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
         gmaps.setCenter(trainpos);
         marker.setPosition(trainpos);
+    });
+}
+
+function getTimeTables(train) {
+    let nextStation = "";
+    $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
+        timetables[id] = timetable;
+        $('#timetable').html("");
+        $.each(timetables[id], function(i, station) {
+            if (station.train_stopping == 1) {
+                let arrival = formatTime(station.arrival);
+                let arrived = formatTime(station.arrived);
+                let departure = formatTime(station.departure);
+                let departed = formatTime(station.departed);
+                let fixedArrival = formatTime(1*station.arrival+(station.arrival_diff*60));
+                let fixedDeparture = formatTime(station.departure+(station.departure_diff*60));
+                let timetableString = '<div class="timetableRow"><h2>'+station.station;
+                timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
+                timetableString += (arrived) ? 'Saapunut: '+arrived+" <b>(+"+station.arrival_diff+")</b>" : (arrival) ? 'Saapuu: '+arrival : '';
+                timetableString += (!arrived && station.arrival_diff>0) ? " <b>("+fixedArrival+")</b>" : "";
+                timetableString += '<br>';
+                timetableString += (departed) ? 'Lähti: '+departed+" <b>(+"+station.departure_diff+")</b>" : (departure) ? 'Lähtee: '+departure : '';
+                timetableString += (!departed && station.departure_diff>0) ? " <b>("+fixedDeparture+")</b>" : "";
+                timetableString += '</div>';
+                $("#timetable").append(timetableString);
+                if (!arrived && nextStation == "" && station.order>0) {
+                    nextStation = station.station;
+                    let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
+                    let nextStationSTR = "<p class='small' style='margin-top:20px;'>Seuraavana:</p><p style='margin-top:20px;'>"+nextStation+"</p>";
+                    nextStationSTR += "<p class='small'>"+distance+" km</p>";
+                    nextStationSTR += "<p style='margin-top:20px' id='NXTArrival'>"+fixedArrival+"</p>";
+                    nextStationSTR += (station.arrival_diff>0) ? "<p class='small'>("+arrival+")</p>" : "";
+                    $("#next_station").html(nextStationSTR);
+                    if (station.arrival_diff > 0) $("#NXTArrival").css('color', 'red');
+                    else $("#NXTArrival").css('color', 'green');
+                }
+                else if (nextStation != "" && arrived) nextStation = "";
+            }
+        });
     });
 }
 

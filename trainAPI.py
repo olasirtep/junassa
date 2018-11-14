@@ -100,6 +100,8 @@ def init() :
 		arrivalTime = False
 		departedTime = False
 		arrivedTime = False
+		arrivalDiff = 0
+		departureDiff = 0
 		stops = len(train["timeTableRows"])/2
 		for station in train["timeTableRows"] :
 			if (departureTime != False and arrivalTime != False) :
@@ -113,6 +115,8 @@ def init() :
 			departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
 			arrivedTime = station.get('actualTime', "") if station["type"] == "ARRIVAL" else arrivedTime
 			departedTime = station.get('actualTime', "") if station["type"] == "DEPARTURE" else departedTime
+			arrivalDiff = station.get('differenceInMinutes', 0) if station["type"] == "ARRIVAL" else arrivalDiff
+			departureDiff = station.get('differenceInMinutes', 0) if station["type"] == "DEPARTURE" else departureDiff
 			longitude = stationLongitude[station["stationShortCode"]]
 			latitude = stationLatitude[station["stationShortCode"]]
 			if (departureTime != False and arrivalTime != False or order == 0 or order == stops) :
@@ -121,8 +125,8 @@ def init() :
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
 				trainStopping = station["trainStopping"]
-				sql = "INSERT INTO `timetables`(`id`, `station`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, order, longitude, latitude, initTime)
+				sql = "INSERT INTO `timetables`(`id`, `station`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+				val = (trainID, stationName, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, initTime)
 				order += 1
 				cursor.execute(sql,val)
 				db.commit()
@@ -151,6 +155,8 @@ def update() :
 		departedTime = False
 		arrivedTime = False
 		order = 0
+		arrivalDiff = 0
+		departureDiff = 0
 		stops = len(train["timeTableRows"])/2
 
 		for station in train["timeTableRows"] :
@@ -171,6 +177,8 @@ def update() :
 			departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
 			arrivedTime = station.get('actualTime', "") if station["type"] == "ARRIVAL" else arrivedTime
 			departedTime = station.get('actualTime', "") if station["type"] == "DEPARTURE" else departedTime
+			arrivalDiff = station.get('differenceInMinutes', 0) if station["type"] == "ARRIVAL" else arrivalDiff
+			departureDiff = station.get('differenceInMinutes', 0) if station["type"] == "DEPARTURE" else departureDiff
 			longitude = stationLongitude[station["stationShortCode"]]
 			latitude = stationLatitude[station["stationShortCode"]]
 			
@@ -180,8 +188,8 @@ def update() :
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
 				trainStopping = station["trainStopping"]
-				sql = "INSERT INTO `timetables`(`id`, `station`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, order, longitude, latitude,updateTime)
+				sql = "INSERT INTO `timetables`(`id`, `station`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+				val = (trainID, stationName, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, updateTime)
 				order += 1
 				cursor.execute(sql,val)
 				db.commit()
