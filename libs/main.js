@@ -103,18 +103,19 @@ function updateMonitor() {
 }
 
 function getTimeTables(train) {
+    $('#lastUpdate').text("Viimeksi päivitetty "+formatTimeHMS(train.last_update));
     let nextStation = "";
     $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
         timetables[id] = timetable;
         $('#timetable').html("");
         $.each(timetables[id], function(i, station) {
             if (station.train_stopping == 1) {
-                let arrival = formatTime(station.arrival);
-                let arrived = formatTime(station.arrived);
-                let departure = formatTime(station.departure);
-                let departed = formatTime(station.departed);
-                let fixedArrival = formatTime(1*station.arrival+(station.arrival_diff*60));
-                let fixedDeparture = formatTime(station.departure+(station.departure_diff*60));
+                let arrival = formatTimeHM(station.arrival);
+                let arrived = formatTimeHM(station.arrived);
+                let departure = formatTimeHM(station.departure);
+                let departed = formatTimeHM(station.departed);
+                let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
+                let fixedDeparture = formatTimeHM(station.departure+(station.departure_diff*60));
                 let timetableString = '<div class="timetableRow"><h2>'+station.station;
                 timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
                 timetableString += (arrived) ? 'Saapunut: '+arrived+" <b>(+"+station.arrival_diff+")</b>" : (arrival) ? 'Saapuu: '+arrival : '';
@@ -141,12 +142,23 @@ function getTimeTables(train) {
     });
 }
 
-function formatTime(timestamp) {
+function formatTimeHM(timestamp) {
     if (timestamp>0) {
         let d = new Date(timestamp*1000);
         let hours = (d.getHours()<10) ? "0"+d.getHours() : d.getHours();
         let minutes = (d.getMinutes()<10) ? "0"+d.getMinutes() : d.getMinutes();
         return hours+":"+minutes;
+    }
+    else return false;
+}
+
+function formatTimeHMS(timestamp) {
+    if (timestamp>0) {
+        let d = new Date(timestamp*1000);
+        let hours = (d.getHours()<10) ? "0"+d.getHours() : d.getHours();
+        let minutes = (d.getMinutes()<10) ? "0"+d.getMinutes() : d.getMinutes();
+        let seconds = (d.getSeconds()<10) ? "0"+d.getSeconds() : d.getSeconds();
+        return hours+":"+minutes+":"+seconds;
     }
     else return false;
 }

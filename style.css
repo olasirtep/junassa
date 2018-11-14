@@ -80,12 +80,16 @@ div.searchResult {
 
 #trainTitle {
     width: 100%;
-    margin: 0 0 10px;
+    margin: 0;
     font-size: 2em;
     text-align:center;
     color:#4D9C38;
     text-shadow: 2px 2px 2px rgba(0,0,0,0);
     font-style: normal;
+}
+
+#lastUpdate {
+    margin: 0 0 10px;
 }
 
 div.timetableRow {
