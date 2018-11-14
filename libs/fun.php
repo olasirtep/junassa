@@ -17,7 +17,7 @@ function generateJSON($result) {
 
     $json = ($json == ']') ? '{"error":"empty response"}' : $json;
     
-    return $json;
+    return utf8_encode($json);
 }
 
 function getTrainsByType($param) {

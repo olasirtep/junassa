@@ -4,6 +4,7 @@ var id = 0;
 var gmaps, marker;
 var updater;
 var user;
+var destination = false;
 
 $(function() {
     showSearchScreen();
@@ -41,7 +42,7 @@ function searchT() {
     $.getJSON("get.php?a=getTrainsByName&p="+$('#query').val(), function(data) {
         if (data.error == "empty response") alert('Palvelinvirhe');
         else {
-            $('main').html("");
+            $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
             $.each(data, function(i, train) {
                 trains[train.id] = train;
                 $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
@@ -73,6 +74,7 @@ function showTrainMonitor(param) {
         $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
             train = train[0];
             $('#trainTitle').text(train.train_type+train.id);
+            $('#whereTowhere').text(train.first_station+" - "+train.last_station);
             getTimeTables(train);
             $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
             // The location of Uluru
@@ -117,12 +119,15 @@ function getTimeTables(train) {
                 let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
                 let fixedDeparture = formatTimeHM(station.departure+(station.departure_diff*60));
                 let timetableString = '<div class="timetableRow"><h2>'+station.station;
+                let arrivalDiff = (station.arrival_diff>0) ? " <b class='positive'>(+"+station.arrival_diff+")</b>" : (station.arrival_diff<0) ? " <b class='negative'>("+station.arrival_diff+")</b>" : "";
+                let departureDiff = (station.departure_diff>0) ? " <b class='positive'>(+"+station.departure_diff+")</b>" : (station.departure_diff<0) ? " <b class='negative'>("+station.departure_diff+")</b>" : "";
                 timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
-                timetableString += (arrived) ? 'Saapunut: '+arrived+" <b>(+"+station.arrival_diff+")</b>" : (arrival) ? 'Saapuu: '+arrival : '';
+                timetableString += (arrived) ? 'Saapunut: '+arrived+arrivalDiff : (arrival) ? 'Saapuu: '+arrival : '';
                 timetableString += (!arrived && station.arrival_diff>0) ? " <b>("+fixedArrival+")</b>" : "";
                 timetableString += '<br>';
-                timetableString += (departed) ? 'Lähti: '+departed+" <b>(+"+station.departure_diff+")</b>" : (departure) ? 'Lähtee: '+departure : '';
+                timetableString += (departed) ? 'Lähti: '+departed+departureDiff : (departure) ? 'Lähtee: '+departure : '';
                 timetableString += (!departed && station.departure_diff>0) ? " <b>("+fixedDeparture+")</b>" : "";
+                timetableString += '<button class="trainPicker" onclick="chooseDestination('+station.station+')">Valitse määränpää</button>'
                 timetableString += '</div>';
                 $("#timetable").append(timetableString);
                 if (!arrived && nextStation == "" && station.order>0) {
@@ -182,3 +187,4 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function DegreesToRadians(degrees) {
     return degrees * (Math.PI/180);
 }
+

@@ -14,13 +14,13 @@
 		echo getTrainsByLocation($parameter, $parameter2);
 	}
 	else if ($action == "getTrainsByName") {
-		echo utf8_encode(getTrainsByName($parameter));
+		echo getTrainsByName($parameter);
 	}
 	else if ($action == "getAllTrains") {
 		echo getAllTrains();
 	}
 	else if ($action == "getStops" && $parameter != 0) {
-		echo utf8_encode(getStops($parameter));
+		echo getStops($parameter);
 	}
 	else if ($action == "getTrainInfo" && $parameter != 0) {
 		echo getTrainInfo($parameter);
