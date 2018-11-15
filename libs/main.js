@@ -5,6 +5,7 @@ var gmaps, marker;
 var updater;
 var user;
 var destination = false;
+var mapLock = true;
 
 $(function() {
     showSearchScreen();
@@ -76,26 +77,30 @@ function searchT() {
 
 function showTrainMonitor(param) {
     id = param;
+    mapLock = true;
     $.cookie('currentID', id);
     var d = new Date();
     var t = d.getTime()/1000;
     $.get("templates/trainMonitor.html", function(page) {
         $('main').html(page);
+        $('main').append('<button class="trainPicker" id="saveTrain" click="saveTrain('+id+') disabled>Muista tämä juna</button>');
         if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
         $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
             train = train[0];
             $('#trainTitle').text(train.train_type+train.id);
             $('#whereTowhere').text(train.first_station+" - "+train.last_station);
-            getTimeTables(train);
-            $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
-            // The location of Uluru
             let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
             // The map, centered at Uluru
             gmaps = new google.maps.Map(
                 document.getElementById('map'), {zoom: 10, center: trainpos});
             // The marker, positioned at Uluru
-            marker = new google.maps.Marker({position: trainpos, map: gmaps});
-
+            marker = new google.maps.Marker({position: trainpos, icon: "https://junassa.petrimalja.com/assets/train_icon_cc0_40px.png", map: gmaps, ZIndex: 100});
+            google.maps.event.addListener(gmaps, 'dragstart', function() { mapLock = false; } );
+            google.maps.event.addListener(marker, 'click', function() {
+                gmaps.setCenter(trainpos);
+                mapLock = true; })
+            getTimeTables(train, true);
+            $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
             updater = setInterval(updateMonitor, 5000);
         });
     });
@@ -112,15 +117,16 @@ function updateMonitor() {
 
     $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
         train = train[0];
-        getTimeTables(train);
+        getTimeTables(train, false);
         $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
         let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
-        gmaps.setCenter(trainpos);
+
+        if (mapLock == true) gmaps.setCenter(trainpos);
         marker.setPosition(trainpos);
     });
 }
 
-function getTimeTables(train) {
+function getTimeTables(train, init) {
     $('#lastUpdate').text("Viimeksi päivitetty "+formatTimeHMS(train.last_update));
     let nextStation = "";
     $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
@@ -128,6 +134,9 @@ function getTimeTables(train) {
         $('#timetable').html("");
         $.each(timetables[id], function(i, station) {
             if (station.train_stopping == 1) {
+                if (init == true) {
+                    let stationMarker = new google.maps.Marker({position: {lat: 1*station.latitude, lng: 1*station.longitude}, icon: "https://junassa.petrimalja.com/assets/station_circle_25px.png", map: gmaps});
+                }
                 let arrival = formatTimeHM(station.arrival);
                 let arrived = formatTimeHM(station.arrived);
                 let departure = formatTimeHM(station.departure);

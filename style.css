@@ -26,7 +26,9 @@ header button {
 }
 main {
     width: 50vw;
-    margin: 15vh auto;
+    margin: 0 auto 10vh;
+    position:relative;
+    top:15vh;
     border-radius: 40px;
     background: white;
     box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
@@ -231,13 +233,14 @@ p.foot {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
 }
 footer {
-    position: static;
+    position: fixed;
+    bottom:0;
     height: 5vh;
     width: 100%;
     text-align: center;
     background: #4D9C38;
     color:white;
-
+    z-index:-1;
     box-shadow: -2px -2px 4px rgba(0,0,0,0.3);
 }
 
@@ -247,7 +250,8 @@ footer {
         max-width: 85vw;
         min-width: 85vw;
         box-shadow: 0px 0px 0px rgba(0,0,0,0);
-        margin: 12vh auto 0;
+        margin: 0 auto;
+        top: 12vh;
         border-radius: 0;
         padding:0;
         min-height: 75vh;
