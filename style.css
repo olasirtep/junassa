@@ -95,6 +95,18 @@ div.searchResult {
     clear:both;
 }
 
+.searchResult button {
+    margin: 0 2px 2px 0!important;
+}
+
+#saveTrain{
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+
+
 #trainTitle {
     width: 100%;
     margin: 0;
@@ -138,9 +150,18 @@ b.negative {
 }
 
 #map p {
-    font-size: 4vh;
-    text-align:center;
-    margin: 50% 0;
+    font-size: 1.5vh;
+    color:#4D9C38;
+    margin:0;
+}
+
+#map p.xsmall {
+    color: #666;
+}
+
+#map h2 {
+    color:#4D9C38;
+    margin:10px;
 }
 
 #info {
@@ -209,6 +230,17 @@ button.trainPicker {
     color:white;
 }
 
+button.trainPicker:active {
+    margin: 2px 0 0 2px;
+    box-shadow: 0px 0px 0px rgba(0,0,0,0);
+}
+
+button.trainPicker:disabled {
+    color: #DDD;
+    background: #888;
+    opacity: 0.6;
+}
+
 h1 {
     margin:0;
     line-height:10vh;
@@ -244,7 +276,7 @@ footer {
     box-shadow: -2px -2px 4px rgba(0,0,0,0.3);
 }
 
-@media screen and (orientation:portrait) {
+@media screen and (orientation:portrait), screen and (max-device-width: 1000px) {
     main {
         width: 85vw;
         max-width: 85vw;
@@ -288,4 +320,21 @@ footer {
         /*margin: 20px -20px 0 0;*/
         margin: 30px -20px 0 0;
     }
+
+    button.trainPicker:active {
+        box-shadow: 0px 0px 0px rgba(0,0,0,0);
+    }
+    
+    #saveTrain.trainPicker{
+        margin:0;
+        position: fixed;
+        top: 2vh;
+        left: 1vh;
+        height: 6vh;
+        z-index: 2;
+        /*border-radius: 0 0 10px 0;*/
+        background: rgb(67, 133, 49);
+        padding: 5px 10px;
+    }
+
 }

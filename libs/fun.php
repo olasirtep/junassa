@@ -68,7 +68,8 @@ function getAllTrains() {
     /*
     *   TODO: get all trains from database
     */
-    return generateJSON($db->query("SELECT * FROM trains WHERE longitude != 0"));
+    $t = time()-300;
+    return generateJSON($db->query("SELECT * FROM trains WHERE longitude != 0 and last_update > ".$t));
 }
 
 function getStops($id) {
