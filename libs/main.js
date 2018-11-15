@@ -50,16 +50,24 @@ function searchT() {
                 $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
                     let nextStation = "";
                     let lateSTR = "";
+                    try {
+                        var startT = formatTimeHM(timetable[0].departure);
+                        var endT = formatTimeHM(timetable[timetable.length-1].arrival);
+                    }
+                    catch (TypeError) {
+                    }
                     timetables[train.id] = timetable;
+
                     $.each(timetable, function(i, station) {
                         if (station.arrived == 0 && nextStation == "" && station.order>0) {
                             nextStation = station.station;
-                            lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff+" minuuttia." : "";
+                            lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff : "";
+                            lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
                             console.log(station.arrival_diff);
                         }
                         else if (nextStation != "" && station.arrived != 0) nextStation = "";
                     });
-                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p class="small">Seuraava asema: '+nextStation+', nopeus: '+train.speed+'km/h'+lateSTR+'</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
+                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
                 });
             });
         }
@@ -125,7 +133,7 @@ function getTimeTables(train) {
                 let departure = formatTimeHM(station.departure);
                 let departed = formatTimeHM(station.departed);
                 let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
-                let fixedDeparture = formatTimeHM(station.departure+(station.departure_diff*60));
+                let fixedDeparture = formatTimeHM(1*station.departure+(station.departure_diff*60));
                 let timetableString = '<div class="timetableRow"><h2>'+station.station;
                 let arrivalDiff = (station.arrival_diff>0) ? " <b class='positive'>(+"+station.arrival_diff+")</b>" : (station.arrival_diff<0) ? " <b class='negative'>("+station.arrival_diff+")</b>" : "";
                 let departureDiff = (station.departure_diff>0) ? " <b class='positive'>(+"+station.departure_diff+")</b>" : (station.departure_diff<0) ? " <b class='negative'>("+station.departure_diff+")</b>" : "";

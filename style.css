@@ -88,7 +88,7 @@ div.searchResult {
 }
 
 .searchResult p {
-    width: 60%;
+    /*width: 60%; Why is this here?*/
     text-align: left;
     clear:both;
 }
@@ -183,6 +183,10 @@ b.negative {
 #timetable p {
     margin: 20px;
     text-align: left;
+}
+
+p.xsmall {
+    font-size: 1.1vh!important;
 }
 
 p.small {
