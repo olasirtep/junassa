@@ -89,7 +89,13 @@ function showTrainMonitor(param) {
         $('main').append(page);
         if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
         $.getJSON("get.php?a=getAllTrains", function(trains) {
-            let trainpos = {lat: parseFloat(trains[id].latitude), lng: parseFloat(trains[id].longitude)};
+            let trainpos;
+            try {
+                trainpos = {lat: parseFloat(trains[id].latitude), lng: parseFloat(trains[id].longitude)};
+            }
+            catch (TypeError) {
+                trainspos = {lat: 0, lng: 0}
+            }
             gmaps = new google.maps.Map(
                 document.getElementById('map'), {zoom: 10, center: trainpos});
             $.each(trains, function(i, _train) {
@@ -131,7 +137,12 @@ function updateMonitor() {
         $.each(trains, function(i, _train) {
             if (_train.id == id) train = _train;
             else {
-                otherTrains[_train.id].setPosition({lat: 1*_train.latitude, lng: 1*_train.longitude});
+                try {
+                    otherTrains[_train.id].setPosition({lat: 1*_train.latitude, lng: 1*_train.longitude});
+                }
+                catch (TypeError) {
+                    console.log("otherTrains[_train.id].setPosition({lat: 1*_train.latitude, lng: 1*_train.longitude});")
+                }
             }
         });
         getTimeTables(train, false);
