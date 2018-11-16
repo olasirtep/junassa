@@ -48,16 +48,21 @@ function getTrainsByName($param) {
     /*
     *   TODO: query trains based on name, eg. IC147
     */
-    $param = strtoupper($param);
+    $param = strtolower($param);
     $param = str_replace(' ', '', $param);
     $param = '%'.$param.'%';
 
     $t = time()-300;
 
-    $stmt = $db->prepare("SELECT * FROM `trains` WHERE concat(train_type, id) LIKE ? and longitude != 0 and last_update > ?");
-    //SELECT * FROM `trains` WHERE concat(train_type, id) LIKE ? and longitude != 0 INNER JOIN `timetables` ON trains.id=timetables.id
-    //SELECT trains.id, speed, trains.latitude, trains.longitude, train_type, timetables.station, timetables.arrival, timetables.arrived, timetables.departure, timetables.departed, trains.last_update FROM `trains` INNER JOIN `timetables` ON trains.id=timetables.id  WHERE concat(trains.train_type, trains.id) LIKE '%R%' and trains.longitude != 0
-    $stmt->bind_param("si", $param, $t);
+    if (strlen($param)>3) {
+
+        $stmt = $db->prepare("SELECT trains.id, trains.speed, trains.longitude, trains.latitude, trains.train_type, trains.first_station, trains.last_station, trains.last_update FROM `trains` LEFT JOIN `timetables` ON trains.id=timetables.id WHERE concat(trains.train_type, trains.id, timetables.station) LIKE ? and timetables.train_stopping = 1 and trains.longitude != 0 and trains.last_update>? and (timetables.arrival > ? or timetables.departure > ?)");
+        $stmt->bind_param("siii", $param, $t, $t, $t);
+    }
+    else {
+        $stmt = $db->prepare("SELECT * FROM `trains` WHERE concat(train_type, id) LIKE ? and longitude != 0 and last_update > ?");
+        $stmt->bind_param("si", $param, $t);
+    }
     $stmt->execute();
 
     return generateJSON($stmt->get_result());

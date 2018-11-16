@@ -40,7 +40,7 @@ main {
 }
 
 main input {
-    width: 60%;
+    width: 80%;
     border-radius: 20px;
     box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
     margin: 10vh 0 0;
@@ -66,17 +66,17 @@ main a:visited {
 }
 
 #searchButton {
-    margin: 6vh;
-    height: 7vh;
-    padding: 2vh 2vw 2vh 2vw;
-    border-radius: 5px;
-    background: white;
-    box-shadow: 2px 2px 2px rgba(0,0,0,0.5), -2px -2px 2px rgba(100,100,100,0.5);
+    margin: 6vh auto;
     font-size: 3.5vh;
-    color: #333;
-    background: #eee;
+    padding: 10px 20px;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+    background: #4D9C38;
     border: 0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    color:white;
+}
+
+#searchLabel {
+    margin: 20px 0 0;
 }
 
 div.searchResult {
@@ -276,6 +276,19 @@ footer {
     box-shadow: -2px -2px 4px rgba(0,0,0,0.3);
 }
 
+#backButton {
+    position:fixed;
+    top: 10px;
+    right: 10px;
+    opacity:0;
+    z-index: 3;
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+    font-size: 5vh;
+    border: none;
+    background: rgba(0,0,0,0);
+}
+
 @media screen and (orientation:portrait), screen and (max-device-width: 1000px) {
     main {
         width: 85vw;
@@ -295,7 +308,20 @@ footer {
 
     main input {
         border:1px solid gray;
+        height: 10vh;
     }
+
+    /*main input {
+        width: 80%;
+        border-radius: 20px;
+        box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+        margin: 10vh 0 0;
+        height: 5vh;
+        font-size: 3.5vh;
+        padding: 1.2vh 2vw;
+        border: 0;
+        opacity: 0.95;
+    }*/
 
     div.timetableRow {
         padding: 10px;
@@ -309,13 +335,6 @@ footer {
         margin: 0 20px 20px!important;
     }
 
-    header button {
-        position:relative;
-        float:right;
-        margin-right: 20px;
-        top:-50px;
-    }
-
     button.trainPicker {
         /*margin: 20px -20px 0 0;*/
         margin: 30px -20px 0 0;
@@ -323,6 +342,14 @@ footer {
 
     button.trainPicker:active {
         box-shadow: 0px 0px 0px rgba(0,0,0,0);
+    }
+
+    #backButton {
+        opacity:1;
+    }
+
+    header button {
+        opacity:0;
     }
     
     #saveTrain.trainPicker{

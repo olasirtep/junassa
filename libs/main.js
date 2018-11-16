@@ -24,10 +24,10 @@ function showSearchScreen() {
         else {
             $.get("templates/search.html", function(data) {
                 $('main').html(data);
-                $("#query").keypress(function() {
-                    setTimeout(function() {
-                        $("#query").val($("#query").val().toUpperCase());
-                    }, 100);
+                $('#query').attr('placeholder', 'Esim. IC147');
+                $("#query").keypress(function(key) {
+                    $('#query').css('background', 'white').attr('placeholder', 'Esim. IC147');
+                    if (key.which == 13) searchT(); 
                 });
             });
         }
@@ -47,7 +47,7 @@ function searchT() {
         var d = new Date();
         var t = d.getTime()/1000;
         $.getJSON("get.php?a=getTrainsByName&p="+$('#query').val(), function(data) {
-            if (data.error == "empty response") alert('Palvelinvirhe');
+            if (data.error == "empty response") $('#query').attr('placeholder', 'Ei osumia').val("").css('background', 'rgba(255,0,0,0.4)');
             else {
                 $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
                 $.each(data, function(i, train) {
@@ -247,7 +247,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
             Math.sin(diffLon/2) * Math.sin(diffLon/2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-    // Return distance in kilometers with .1 precision
+    // Return distance in kilometers with 1 decimals
     return Math.floor((ED * c)/100)/10;
 }
 
