@@ -1,14 +1,17 @@
-var trains = {};
-var timetables = {};
-var id = 0;
-var gmaps, marker;
-var updater;
-var user;
-var destination = false;
-var mapLock = true;
-var stationMarkers = {};
-var stationInfoWindows = {};
+var trains = {}; // Contains train-objects
+var timetables = {}; // Contains selected trains timetable-objects
+var id = 0; // ID of selected train
+var gmaps, marker; // Google.maps-object and train marker object
+var updater; // Interval call-back for monitor update
+var user; // User ID
+var destination = false; // Name of the station user has selected as final destination
+var mapLock = true; // When true maps center is locked on the train
+var stationMarkers = {}; // Map markers for stations
+var stationInfoWindows = {}; // Info windows for stations
 
+/*  
+*   Function iniates SearchScreen and checks destination cookie
+*/
 $(function() {
     showSearchScreen();
     if ($.cookie('currentDST')) destination = $.cookie('currentDST');
