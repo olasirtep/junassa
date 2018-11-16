@@ -64,7 +64,7 @@ function searchT() {
                         timetables[train.id] = timetable;
 
                         $.each(timetable, function(i, station) {
-                            if (station.arrived == 0 && nextStation == "" && station.order>0) {
+                            if (station.arrived == 0 && nextStation == "" && station.order>0 && station.train_stopping == 1) {
                                 nextStation = station.station;
                                 lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff : "";
                                 lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
