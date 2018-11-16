@@ -8,7 +8,6 @@ var destination = false;
 var mapLock = true;
 var stationMarkers = {};
 var stationInfoWindows = {};
-var otherTrains = {};
 
 $(function() {
     showSearchScreen();
@@ -67,7 +66,6 @@ function searchT() {
                             nextStation = station.station;
                             lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff : "";
                             lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
-                            console.log(station.arrival_diff);
                         }
                         else if (nextStation != "" && station.arrived != 0) nextStation = "";
                     });
@@ -88,17 +86,17 @@ function showTrainMonitor(param) {
         $('main').html('<button class="trainPicker" id="saveTrain" click="saveTrain('+id+')" disabled>Muista juna</button>');
         $('main').append(page);
         if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
-        $.getJSON("get.php?a=getAllTrains", function(trains) {
-            let trainpos = {lat: parseFloat(trains[id].latitude), lng: parseFloat(trains[id].longitude)};
+        $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
+            train = train[0];
+            let trainpos;
+            try {
+                trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
+            }
+            catch (TypeError) {
+                trainspos = {lat: 0, lng: 0}
+            }
             gmaps = new google.maps.Map(
                 document.getElementById('map'), {zoom: 10, center: trainpos});
-            $.each(trains, function(i, _train) {
-                if (_train.id == id) train = _train;
-                else {
-                    otherTrains[_train.id] = new google.maps.Marker({position: {lat: 1*_train.latitude, lng: 1*_train.longitude}, title: _train.train_type+_train.id, icon: "https://junassa.petrimalja.com/assets/other_train_icon_cc0_40px.png", map:gmaps})
-                }
-            });
-            trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
             $('#trainTitle').text(train.train_type+train.id);
             $('#whereTowhere').text(train.first_station+" - "+train.last_station);
             marker = new google.maps.Marker({position: trainpos, title: train.train_type+train.id, icon: "https://junassa.petrimalja.com/assets/train_icon_cc0_40px.png", map: gmaps, ZIndex: 100});
@@ -110,7 +108,7 @@ function showTrainMonitor(param) {
                 $.each(stationInfoWindows, function(i, window) {
                     window.close();
                 });
-            })
+            });
             getTimeTables(train, true);
             $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
             updater = setInterval(updateMonitor, 5000);
@@ -127,13 +125,8 @@ function updateMonitor() {
 
     if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
 
-    $.getJSON("get.php?a=getAllTrains", function(trains) {
-        $.each(trains, function(i, _train) {
-            if (_train.id == id) train = _train;
-            else {
-                otherTrains[_train.id].setPosition({lat: 1*_train.latitude, lng: 1*_train.longitude});
-            }
-        });
+    $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
+        train = train[0];
         getTimeTables(train, false);
         $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
         let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
