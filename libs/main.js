@@ -88,6 +88,7 @@ function showTrainMonitor(param) {
         if (!destination) $('#destination').html("<p id='nodestination'>Et ole valinnut määränpäätä</p>");
         $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
             train = train[0];
+            trains[id] = train;
             let trainpos;
             try {
                 trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
@@ -96,14 +97,14 @@ function showTrainMonitor(param) {
                 trainspos = {lat: 0, lng: 0}
             }
             gmaps = new google.maps.Map(
-                document.getElementById('map'), {zoom: 10, center: trainpos});
+                document.getElementById('map'), {zoom: 10, center: trainpos, streetViewControl: false});
             $('#trainTitle').text(train.train_type+train.id);
             $('#whereTowhere').text(train.first_station+" - "+train.last_station);
             marker = new google.maps.Marker({position: trainpos, title: train.train_type+train.id, icon: "https://junassa.petrimalja.com/assets/train_icon_cc0_40px.png", map: gmaps, ZIndex: 100});
             gmaps.setCenter(trainpos);
             google.maps.event.addListener(gmaps, 'dragstart', function() { mapLock = false; } );
             google.maps.event.addListener(marker, 'click', function() {
-                gmaps.setCenter(trainpos);
+                gmaps.setCenter({lat: 1*trains[id].latitude, lng: 1*trains[id].longitude});
                 mapLock = true;
                 $.each(stationInfoWindows, function(i, window) {
                     window.close();
@@ -127,6 +128,7 @@ function updateMonitor() {
 
     $.getJSON("get.php?a=getTrainInfo&p="+id, function(train) {
         train = train[0];
+        trains[id] = train;
         getTimeTables(train, false);
         $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
         let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
@@ -164,7 +166,7 @@ function getTimeTables(train, init) {
                 timetableString += '</div>';
                 $("#timetable").append(timetableString);
                 if (init == true) {
-                    stationMarkers[station.station] = new google.maps.Marker({position: {lat: 1*station.latitude, lng: 1*station.longitude}, title: station.station, icon: "https://junassa.petrimalja.com/assets/station_circle_25px.png", map: gmaps});
+                    stationMarkers[station.station] = new google.maps.Marker({position: {lat: 1*station.latitude, lng: 1*station.longitude}, title: station.station, icon: "https://junassa.petrimalja.com/assets/station_circle_25px.png", map: gmaps, ZIndex: 1});
                     stationInfoWindows[station.station] = new google.maps.InfoWindow({
                         content: '<h2>'+station.station+'<h2>'+
                                     '<p>'+arrival+'</p>'+
