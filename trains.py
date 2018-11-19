@@ -2,24 +2,26 @@ import time
 from trainAPI import *
 
 if __name__ == "__main__" :
-	t = time.time()
+	locationsT = time.time()
+	timetablesT = time.time()
 	init()
-	#print("INIT READY")
-	interval = 5
 	lastSecond = 0
-	#print("Waiting 5 seconds to next update run...")
 	while(True) :
 		time.sleep(1)
-		if (time.time()-lastSecond >= 1) :
-			#print(interval)
-			interval -= 1
-			lastSecond = time.time()
-		if (time.time() - t >= 5) :
-			interval = 5
-			t = time.time()
+		if (time.time() - locationsT >= 5) :
+			locationsT = time.time()
 			try :
-				update()
-				print("Update took",time.time()-t,"seconds")
+				print("Updating train locations...")
+				updateLocations()
+				print("Update took",time.time()-locationsT,"seconds")
 			except urllib.error.HTTPError :
-				print("!!! Update failed with HTTPError!")
+				print("!!! Location update failed with HTTPError!")
+		if (time.time() - timetablesT >= 30) :
+			timetablesT = time.time()
+			try :
+				print("Updating timetables...")
+				updateTimetables()
+				print("Update took",time.time()-timetablesT,"seconds")
+			except urllib.error.HTTPError :
+				print("!!! Location update failed with HTTPError!")
 	db.close()

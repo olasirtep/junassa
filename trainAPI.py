@@ -137,18 +137,15 @@ def init() :
 				departureTime = True
 				arrivalTime = True
 
-def update() :
+def updateTimetables() :
 	global latestVersion
 	global trains
 	print(datetime.utcnow().isoformat())
 	updateTime = datetime.utcnow().timestamp()
 
-	#print("LATEST VERSION:",str(latestVersion))
-	#print("Getting latest traininfo...")
 	response = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/trains?version="+str(latestVersion)).read()
 	trains = json.loads(response.decode('utf-8'))
 
-	#print("Updating database...")
 	for train in trains :
 		latestVersion = train["version"] if train["version"] > latestVersion else latestVersion
 		sql = "DELETE FROM timetables WHERE id = "+str(train["trainNumber"])	
@@ -205,6 +202,8 @@ def update() :
 				arrivalTime = True
 
 
+def updateLocations():
+	updateTime = datetime.utcnow().timestamp()
 	#print("Getting latest locations...")
 	response = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/train-locations/latest/").read()
 	locations = json.loads(response.decode('utf-8'))
