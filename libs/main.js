@@ -8,84 +8,72 @@ var destination = false; // Name of the station user has selected as final desti
 var mapLock = true; // When true maps center is locked on the train
 var stationMarkers = {}; // Map markers for stations
 var stationInfoWindows = {}; // Info windows for stations
+var currentPage = "index";
 
-/*  
-*   Function iniates SearchScreen and checks destination cookie
-*/
-$(function() {
-    showSearchScreen();
-    if ($.cookie('currentDST')) destination = $.cookie('currentDST');
-});
-
-function showSearchScreen() {
-    if ($.cookie('currentID')) showTrainMonitor($.cookie('currentID'));
-    else {
-        user = $.cookie("uid");
-        if (user) {
-
-        }
-        else {
-            $.get("templates/search.html", function(data) {
-                $('main').html(data);
-                $('#query').attr('placeholder', 'Esim. IC147');
-                $("#query").keypress(function(key) {
-                    $('#query').css('background', 'white').attr('placeholder', 'Esim. IC147');
-                    if (key.which == 13) searchT(); 
-                });
-            });
-        }
-    }
+function showSearchScreen(e) {
+    $.get("templates/search.html", function(data) {
+        $('main').html(data);
+        $('#query').attr('placeholder', 'Esim. IC147');
+        if (e == "empty") $('#query').attr('placeholder', 'Ei osumia').val("").css('background', 'rgba(255,0,0,0.4)');
+        $("#query").keypress(function(key) {
+            $('#query').css('background', 'white').attr('placeholder', 'Esim. IC147');
+            if (key.which == 13) window.location = '?q='+$("#query").val(); 
+        });
+    });
 }
 
 function back() {
-    clearInterval(updater);
-    $.removeCookie('currentID');
-    $.removeCookie('currentDST');
-    location.reload();
+    if (currentPage == "search") window.location = "?";
+    else window.location = document.referrer;
 }
 
-function searchT() {
-    if ($('#query').val() == "") alert('Hakukenttä ei voi olla tyhjä');
-    else {
-        var d = new Date();
-        var t = d.getTime()/1000;
-        $.getJSON("get.php?a=getTrainsByName&p="+$('#query').val(), function(data) {
-            if (data.error == "empty response") $('#query').attr('placeholder', 'Ei osumia').val("").css('background', 'rgba(255,0,0,0.4)');
-            else {
-                $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
-                $.each(data, function(i, train) {
-                    trains[train.id] = train;
-                    $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
-                        let nextStation = "";
-                        let lateSTR = "";
-                        try {
-                            var startT = formatTimeHM(timetable[0].departure);
-                            var endT = formatTimeHM(timetable[timetable.length-1].arrival);
-                        }
-                        catch (TypeError) {
-                        }
-                        timetables[train.id] = timetable;
+function search() {
+    if ($("#query").val() == "") alert('Hakukenttä ei voi olla tyhjä');
+    else window.location = '?q='+$("#query").val();
+}
 
-                        $.each(timetable, function(i, station) {
-                            if (station.arrived == 0 && nextStation == "" && station.order>0 && station.train_stopping == 1) {
-                                nextStation = station.station;
-                                lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff : "";
-                                lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
-                            }
-                            else if (nextStation != "" && station.arrived != 0) nextStation = "";
-                        });
-                        $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p><button class="trainPicker" onclick="showTrainMonitor('+train.id+')">Valitse</button></div>');
+function searchT(query) {
+    currentPage = "search";
+    var d = new Date();
+    var t = d.getTime()/1000;
+    $.getJSON("get.php?a=getTrainsByName&p="+query, function(data) {
+        if (data.error == "empty response") window.location = "?e=empty";
+        else {
+            $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
+            $.each(data, function(i, train) {
+                trains[train.id] = train;
+                $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
+                    let nextStation = "";
+                    let lateSTR = "";
+                    try {
+                        var startT = formatTimeHM(timetable[0].departure);
+                        var endT = formatTimeHM(timetable[timetable.length-1].arrival);
+                    }
+                    catch (TypeError) {
+                    }
+                    timetables[train.id] = timetable;
+
+                    $.each(timetable, function(i, station) {
+                        if (station.arrived == 0 && nextStation == "" && station.order>0 && station.train_stopping == 1) {
+                            nextStation = station.station;
+                            lateSTR = (station.arrival_diff>0) ? ", myöhässä "+station.arrival_diff : "";
+                            lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
+                        }
+                        else if (nextStation != "" && station.arrived != 0) nextStation = "";
                     });
+                    let buttonOnClick = "window.location.href='?id="+train.id+"'";
+                    let buttonSTR = '<button class="trainPicker" onclick="'+buttonOnClick+'">Valitse</button>';
+                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p>'+buttonSTR+'</div>');
                 });
-            }
-        });
-    }
+            });
+        }
+    });
 }
 
 function showTrainMonitor(param) {
+    currentPage = "monitor";
     id = param;
     mapLock = true;
-    $.cookie('currentID', id);
     var d = new Date();
     var t = d.getTime()/1000;
     $.get("templates/trainMonitor.html", function(page) {
@@ -260,7 +248,6 @@ function DegreesToRadians(degrees) {
 
 function setDestination(dest) {
     destination = dest;
-    $.cookie('currentDST', dest);
     $("html, body").animate({ scrollTop: 0 }, "slow");
     updateMonitor();
 }

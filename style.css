@@ -250,6 +250,16 @@ h1 {
     font-size: 5vh;
     font-style: italic;
 }
+
+header a {
+    color: white;
+    text-decoration:none;
+}
+
+header a:visited {
+    color: white;
+    text-decoration:none;
+}
 p {
     margin:0;
 }
@@ -346,7 +356,7 @@ footer {
     }
 
     #backButton {
-        opacity:1;
+        opacity:0;
     }
 
     header button {
