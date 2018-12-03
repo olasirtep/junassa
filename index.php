@@ -26,5 +26,4 @@
 
     echo '</script></body></html>';
 
-    ?>
-    
+?>
