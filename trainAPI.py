@@ -87,7 +87,7 @@ def init() :
 		stops = len(train["timeTableRows"])/2
 		currentStation = ""
 		for station in train["timeTableRows"] :
-			if (order == 0) currentStation = stations[station["stationShortCode"]]
+			#if (order == 0) : currentStation = stations[station["stationShortCode"]]
 			if (departureTime != False and arrivalTime != False) :
 				departureTime = False
 				arrivalTime = False
@@ -112,7 +112,7 @@ def init() :
 				departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
-				if (arrivedTime>0) currentStation = stations[station["stationShortCode"]]
+				#if (arrivedTime>0) : currentStation = stations[station["stationShortCode"]]
 				trainStopping = station["trainStopping"]
 				sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 				val = (trainID, stationName, stationASCII, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, initTime)

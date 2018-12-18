@@ -13,7 +13,7 @@
         echo '$(searchT("'.$query.'"));';
     }
     else if ($id) {
-        echo '<script async defer
+        echo '<script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7o8OLl450h1HIJ0b8u-LG8isoMzmXJL4">
         </script>';
         echo '<script>';

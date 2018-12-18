@@ -61,9 +61,11 @@ function searchT(query) {
                         }
                         else if (nextStation != "" && station.arrived != 0) nextStation = "";
                     });
-                    let buttonOnClick = "window.location.href='?id="+train.id+"'";
-                    let buttonSTR = '<button class="trainPicker" onclick="'+buttonOnClick+'">Valitse</button>';
-                    $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p>'+buttonSTR+'</div>');
+                    if (nextStation != "") {
+                        let buttonOnClick = "window.location.href='?id="+train.id+"'";
+                        let buttonSTR = '<button class="trainPicker" onclick="'+buttonOnClick+'">Valitse</button>';
+                        $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p>'+buttonSTR+'</div>');
+                    }
                 });
             });
         }
