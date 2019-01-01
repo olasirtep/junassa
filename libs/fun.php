@@ -60,7 +60,7 @@ function getTrainsByName($param) {
 
     if (strlen($param)>3) {
 
-        $stmt = $db->prepare("SELECT trains.id, trains.speed, trains.longitude, trains.latitude, trains.train_type, trains.first_station, trains.last_station, trains.last_update FROM `trains` LEFT JOIN `timetables` ON trains.id=timetables.id WHERE concat(trains.train_type, trains.id, timetables.station_ASCII) LIKE ? and timetables.train_stopping = 1 and trains.longitude != 0 and trains.last_update>? and (timetables.arrival > ? or timetables.departure > ?)");
+        $stmt = $db->prepare("SELECT DISTINCT trains.id, trains.speed, trains.longitude, trains.latitude, trains.train_type, trains.first_station, trains.last_station, trains.last_update FROM `trains` LEFT JOIN `timetables` ON trains.id=timetables.id WHERE concat(trains.train_type, trains.id, timetables.station_ASCII) LIKE ? and timetables.train_stopping = 1 and trains.longitude != 0 and trains.last_update>? and (timetables.arrival > ? or timetables.departure > ?)");
         $stmt->bind_param("siii", $param, $t, $now, $now);
     }
     else {
