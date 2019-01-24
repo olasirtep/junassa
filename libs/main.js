@@ -1,4 +1,4 @@
-var trains = {}; // Contains train-objects
+﻿var trains = {}; // Contains train-objects
 var timetables = {}; // Contains selected trains timetable-objects
 var id = 0; // ID of selected train
 var gmaps, marker; // Google.maps-object and train marker object
@@ -9,11 +9,12 @@ var mapLock = true; // When true maps center is locked on the train
 var stationMarkers = {}; // Map markers for stations
 var stationInfoWindows = {}; // Info windows for stations
 var currentPage = "index";
+var lastSpeed = 0;
 
 function showSearchScreen(e) {
     $.get("templates/search.html", function(data) {
         $('main').html(data);
-        $('#query').attr('placeholder', 'Esim. IC147');
+        $('#query').attr('placeholder', 'Esim. Riihimäki');
         if (e == "empty") $('#query').attr('placeholder', 'Ei osumia').val("").css('background', 'rgba(255,0,0,0.4)');
         $("#query").keypress(function(key) {
             $('#query').css('background', 'white').attr('placeholder', 'Esim. IC147');
@@ -126,7 +127,8 @@ function updateMonitor() {
         train = train[0];
         trains[id] = train;
         getTimeTables(train, false);
-        $("#speed").html("<p class='big'>"+train.speed+"</p><p class='small'>km/h</p>");
+	tSpeed = (train.speed == 0 && lastSpeed == train.speed) ? "--" : train.speed;
+        $("#speed").html("<p class='big'>"+tSpeed+"</p><p class='small'>km/h</p>");
         let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
 
         if (mapLock == true) gmaps.setCenter(trainpos);
@@ -139,28 +141,32 @@ function getTimeTables(train, init) {
     let nextStation = "";
     $.getJSON("get.php?a=getStops&p="+id, function(timetable) {
         timetables[id] = timetable;
-        $('#timetable').html("");
+        $('#pastStations').html("");
+        $('#nextStations').html("");
         $.each(timetables[id], function(i, station) {
             if (station.train_stopping == 1) {
                 let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
-                let arrival = formatTimeHM(station.arrival);
+                let arrival = formatTimeHM(1*station.arrival-(station.arrival_diff*60));
                 let arrived = formatTimeHM(station.arrived);
-                let departure = formatTimeHM(station.departure);
+                let departure = formatTimeHM(1*station.departure-(station.departure_diff*60));
                 let departed = formatTimeHM(station.departed);
                 let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
                 let fixedDeparture = formatTimeHM(1*station.departure+(station.departure_diff*60));
                 let timetableString = '<div class="timetableRow"><h2>'+station.station;
-                let arrivalDiff = (station.arrival_diff>0) ? " <b class='positive'>+"+station.arrival_diff+"</b>" : (station.arrival_diff<0) ? " <b class='negative'>"+station.arrival_diff+"</b>" : "";
-                let departureDiff = (station.departure_diff>0) ? " <b class='positive'>+"+station.departure_diff+"</b>" : (station.departure_diff<0) ? " <b class='negative'>"+station.departure_diff+"</b>" : "";
+                let arrivalDiff = (station.arrival_diff>0) ? " (<b class='positive'>"+arrival+"</b>)" : (station.arrival_diff<0) ? " <b class='negative'>"+station.arrival_diff+"</b>" : "";
+                let departureDiff = (station.departure_diff>0) ? " (<b class='positive'>"+departure+"</b>)" : (station.departure_diff<0) ? " <b class='negative'>"+station.departure_diff+"</b>" : "";
                 timetableString += (arrived || departed) ? '&#9989;</h2><br><p>' : '</h2><br><p>';
                 timetableString += (arrived) ? 'Saapunut: '+arrived+arrivalDiff : (arrival) ? 'Saapuu: '+arrival : '';
                 timetableString += (!arrived && station.arrival_diff>0) ? " <b>("+fixedArrival+")</b>" : "";
                 timetableString += '<br>';
-                timetableString += (departed) ? 'Lähti: '+departed+departureDiff : (departure) ? 'Lähtee: '+departure : '';
+                timetableString += (departed) ? 'Lähtenyt: '+departed+departureDiff : (departure) ? 'Lähtee: '+departure : '';
                 timetableString += (!departed && station.departure_diff>0 && departure != 0) ? " <b>("+fixedDeparture+")</b>" : "";
+                timetableString += '</p><p class="xsmall" style="margin:0; padding:0;">Raide '+station.track+'</p>';
                 timetableString += (!destination && !arrived && !departed) ? '<button class="trainPicker" onclick="setDestination(`'+station.station+'`)">Valitse määränpää</button>' : "";
                 timetableString += '</div>';
-                $("#timetable").append(timetableString);
+                if (departed) $("#pastStations").append(timetableString);
+                else $("#nextStations").append(timetableString);
+                
                 if (init == true) {
                     stationMarkers[station.station] = new google.maps.Marker({position: {lat: 1*station.latitude, lng: 1*station.longitude}, title: station.station, icon: "https://junassa.petrimalja.com/assets/station_circle_25px.png", map: gmaps, ZIndex: 1});
                     stationInfoWindows[station.station] = new google.maps.InfoWindow({

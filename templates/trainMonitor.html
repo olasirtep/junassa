@@ -1,4 +1,3 @@
-
 <h2 id="trainTitle" class="VRGreen"></h2>
 <p id="whereTowhere" class="VRGreen"></p>
 <p class="small" id="lastUpdate"></p>
@@ -8,5 +7,20 @@
     <div id="speed"></div>
     <div id="next_station"></div>
 </div>
-<div id="timetable"></div>
+
+    <div style="width:100%;clear:both;height:10px;"></div>
+    <div id="accordion">
+        <h3 class="VRGreen">Menneet asemat</h3>
+        <div id="pastStations"></div>
+        <h3 class="VRGreen">Seuraavat asemat</h3>
+        <div id="nextStations"></div>
+    </div>
+
 <p class="VRGreen"><a href="#top">Takaisin ylös</a></p>
+<script>
+$( function() {
+    $( "#accordion" ).accordion({
+        active: 1
+    });
+  } );
+</script>

@@ -86,14 +86,13 @@ def init() :
 		departureDiff = 0
 		stops = len(train["timeTableRows"])/2
 		currentStation = ""
+		track = 0
 		for station in train["timeTableRows"] :
-			#if (order == 0) : currentStation = stations[station["stationShortCode"]]
 			if (departureTime != False and arrivalTime != False) :
 				departureTime = False
 				arrivalTime = False
 				departedTime = False
 				arrivedTime = False
-			#print("Train:",train["trainNumber"],"Station:",stations[station["stationShortCode"]])
 			stationName = stations[station["stationShortCode"]]
 			arrivalTime = station["scheduledTime"] if station["type"] == "ARRIVAL" else arrivalTime
 			departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
@@ -107,15 +106,15 @@ def init() :
 			stationASCII = stationASCII.replace("ö","o")
 			stationASCII = stationASCII.replace("Ä","A")
 			stationASCII = stationASCII.replace("Ö","O")
+			track = station.get('commercialTrack', 0) if station.get('commercialTrack', 0) != '' else track
 			if (departureTime != False and arrivalTime != False or order == 0 or order == stops) :
 				arrivalTime = dp.parse(arrivalTime).strftime('%s') if arrivalTime else 0
 				departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
-				#if (arrivedTime>0) : currentStation = stations[station["stationShortCode"]]
 				trainStopping = station["trainStopping"]
-				sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, stationASCII, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, initTime)
+				sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `track`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+				val = (trainID, stationName, stationASCII, trainStopping, track, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, initTime)
 				order += 1
 				cursor.execute(sql,val)
 				db.commit()
@@ -164,6 +163,7 @@ def updateTimetables() :
 		arrivalDiff = 0
 		departureDiff = 0
 		stops = len(train["timeTableRows"])/2
+		track = 0
 
 		for station in train["timeTableRows"] :
 			if (departureTime != False and arrivalTime != False) :
@@ -193,15 +193,15 @@ def updateTimetables() :
 			stationASCII = stationASCII.replace("ö","o")
 			stationASCII = stationASCII.replace("Ä","A")
 			stationASCII = stationASCII.replace("Ö","O")
-			
+			track = station.get('commercialTrack', 0) if station.get('commercialTrack', 0) != '' else track
 			if (departureTime != False and arrivalTime != False or order == 0 or order == stops) :
 				arrivalTime = dp.parse(arrivalTime).strftime('%s') if arrivalTime else 0
 				departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
 				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
 				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
 				trainStopping = station["trainStopping"]
-				sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, stationASCII, trainStopping, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, updateTime)
+				sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `track`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+				val = (trainID, stationName, stationASCII, trainStopping, track, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, updateTime)
 				order += 1
 				cursor.execute(sql,val)
 				db.commit()
