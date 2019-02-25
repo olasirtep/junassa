@@ -10,6 +10,7 @@ var stationMarkers = {}; // Map markers for stations
 var stationInfoWindows = {}; // Info windows for stations
 var currentPage = "index";
 var lastSpeed = 0;
+var showMap = true;
 
 function showSearchScreen(e) {
     $.get("templates/search.html", function(data) {
@@ -88,7 +89,8 @@ function showTrainMonitor(param) {
             trains[id] = train;
             $('#trainTitle').text(train.train_type+train.id);
             $('#whereTowhere').text(train.first_station+" - "+train.last_station);
-            if (train.latitude != 0) {
+            if (train.latitude != 0 && train.last_update > (Math.floor(Date.now()/1000)-300)) {
+                showMap = true;
                 let trainpos;
                 try {
                     trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
@@ -110,6 +112,7 @@ function showTrainMonitor(param) {
                 });
             }
             else {
+                showMap = false;
                 $('#map').html('<h2 id="noLocation">Sijaintia ei saatavilla<h2>');
             }
             getTimeTables(train, true);
@@ -132,12 +135,14 @@ function updateMonitor() {
         train = train[0];
         trains[id] = train;
         getTimeTables(train, false);
-	tSpeed = (train.speed == 0 && lastSpeed == train.speed) ? "--" : train.speed;
+	    tSpeed = (train.speed == 0 && lastSpeed == train.speed) ? "--" : train.speed;
         $("#speed").html("<p class='big'>"+tSpeed+"</p><p class='small'>km/h</p>");
-        let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
+        if (showMap) {
+            let trainpos = {lat: parseFloat(train.latitude), lng: parseFloat(train.longitude)};
 
-        if (mapLock == true) gmaps.setCenter(trainpos);
-        marker.setPosition(trainpos);
+            if (mapLock == true) gmaps.setCenter(trainpos);
+            marker.setPosition(trainpos);
+        }
     });
 }
 
@@ -172,7 +177,7 @@ function getTimeTables(train, init) {
                 if (departed) $("#pastStations").append(timetableString);
                 else $("#nextStations").append(timetableString);
                 
-                if (init == true) {
+                if (init == true && showMap) {
                     stationMarkers[station.station] = new google.maps.Marker({position: {lat: 1*station.latitude, lng: 1*station.longitude}, title: station.station, icon: "https://junassa.petrimalja.com/assets/station_circle_25px.png", map: gmaps, ZIndex: 1});
                     stationInfoWindows[station.station] = new google.maps.InfoWindow({
                         content: '<h2>'+station.station+'<h2>'+
@@ -186,11 +191,12 @@ function getTimeTables(train, init) {
                         });
                         stationInfoWindows[station.station].open(gmaps, stationMarkers[station.station]);
                     });
+                    stationInfoWindowTime = (fixedArrival) ? fixedArrival : fixedDeparture;
+                    stationInfoWindows[station.station].setContent('<h2>'+station.station+'<h2>'+
+                                                                    '<p>'+stationInfoWindowTime+'</p>'+
+                                                                    '<p class="xsmall">'+distance+' km</p>');
                 }
-                stationInfoWindowTime = (fixedArrival) ? fixedArrival : fixedDeparture;
-                stationInfoWindows[station.station].setContent('<h2>'+station.station+'<h2>'+
-                                                                '<p>'+stationInfoWindowTime+'</p>'+
-                                                                '<p class="xsmall">'+distance+' km</p>');
+        
                 if (station.station == destination) {
                     let destinationString = "<p class='small info'>Määränpää:</p>";
                     let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
