@@ -1,3 +1,4 @@
 secrets.*
 jquery*
 *pycache*
+*.out
