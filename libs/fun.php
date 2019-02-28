@@ -64,8 +64,8 @@ function getTrainsByName($param) {
         $stmt->bind_param("sii", $param, $now, $now);
     }
     else {
-        $stmt = $db->prepare("SELECT * FROM `trains` WHERE concat(train_type, id) LIKE ?");
-        $stmt->bind_param("s", $param);
+        $stmt = $db->prepare("SELECT * FROM `trains` WHERE concat(train_type, id) LIKE ? AND last_update > ?");
+        $stmt->bind_param("si", $param, $t);
     }
     $stmt->execute();
 

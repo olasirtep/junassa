@@ -56,6 +56,9 @@ function searchT(query) {
                     }
                     timetables[train.id] = timetable;
 
+                    futureTrain = (timetable[0].departure>Date.now()/1000) ? true:false;
+                    let trainArrivalToQuery = "";
+
                     $.each(timetable, function(i, station) {
                         if (station.arrived == 0 && nextStation == "" && station.order>0 && station.train_stopping == 1) {
                             nextStation = station.station;
@@ -63,11 +66,19 @@ function searchT(query) {
                             lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
                         }
                         else if (nextStation != "" && station.arrived != 0) nextStation = "";
+                        if (query.toLowerCase() == station.station.toLowerCase()) {
+                            let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
+                            trainArrivalToQuery = "Saapuu asemalle "+station.station+" klo "+fixedArrival;
+                        }
                     });
                     if (nextStation != "") {
                         let buttonOnClick = "window.location.href='?id="+train.id+"'";
                         let buttonSTR = '<button class="trainPicker" onclick="'+buttonOnClick+'">Valitse</button>';
-                        $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p>'+buttonSTR+'</div>');
+                        if (futureTrain) {
+                            let fixedDeparture = formatTimeHM(1*timetable[0].departure+(timetable[0].departure_diff*60));
+                            $('main').append('<div class="searchResult" style="background:#EEE"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="xsmall">'+trainArrivalToQuery+'</p>'+buttonSTR+'</div>');
+                        }
+                        else $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p><p class="xsmall">'+trainArrivalToQuery+'</p>'+buttonSTR+'</div>');
                     }
                 });
             });
