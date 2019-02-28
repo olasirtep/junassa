@@ -202,7 +202,8 @@ function getTimeTables(train, init) {
                     let destinationString = "<p class='small info'>Määränpää:</p>";
                     let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
                     destinationString += '<p class="info">'+destination+'</p>';
-                    destinationString += '<p class="small">'+distance+" km</p>";
+                    if (showMap) destinationString += '<p class="small">'+distance+" km</p>";
+                    else nextStationSTR += "<br>";
                     destinationString += '<p id="DSTArrival" class="info">'+fixedArrival+'</p>';
                     destinationString += (station.arrival_diff>0) ? "<p class='small'>("+arrival+")</p>" : "";
                     $('#destination').html(destinationString);
@@ -213,7 +214,8 @@ function getTimeTables(train, init) {
                     nextStation = station.station;
                     let distance = calculateDistance(train.latitude, train.longitude, station.latitude, station.longitude);
                     let nextStationSTR = "<p class='small' style='margin-top:20px;'>Seuraavana:</p><p style='margin-top:20px;'>"+nextStation+"</p>";
-                    nextStationSTR += "<p class='small'>"+distance+" km</p>";
+                    if (showMap) nextStationSTR += "<p class='small'>"+distance+" km</p>";
+                    else nextStationSTR += "<br>";
                     nextStationSTR += "<p style='margin-top:20px' id='NXTArrival'>"+fixedArrival+"</p>";
                     nextStationSTR += (station.arrival_diff>0) ? "<p class='small'>("+arrival+")</p>" : "";
                     $("#next_station").html(nextStationSTR);
