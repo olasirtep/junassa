@@ -40,6 +40,7 @@ function searchT(query) {
     var t = d.getTime()/1000;
     $.getJSON("get.php?a=getTrainsByName&p="+query, function(data) {
         if (data.error == "empty response") window.location = "?e=empty";
+        else if (data.length == 1) window.location = "?id="+data[0].id;
         else {
             $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
             $.each(data, function(i, train) {
