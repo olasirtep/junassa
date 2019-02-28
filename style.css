@@ -411,4 +411,10 @@ footer {
     .xsmall {
         font-size: 1.3vh!important;
     }
+    #noLocation {
+        line-height: 40vh;
+        font-size: 2vh;
+        color:white!important;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    }
 }
