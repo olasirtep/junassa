@@ -11,6 +11,8 @@ var stationInfoWindows = {}; // Info windows for stations
 var currentPage = "index";
 var lastSpeed = 0;
 var showMap = true;
+var trainSTR = {};
+var trainsDone = 0;
 
 function showSearchScreen(e) {
     $.get("templates/search.html", function(data) {
@@ -42,10 +44,11 @@ function searchT(query) {
         if (data.error == "empty response") window.location = "?e=empty";
         else if (data.length == 1) window.location = "?id="+data[0].id;
         else {
-            $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
+            $('main').html('<h2 class="VRGreen">Ladataan hakutuloksia <b id="result_i">1</b>/<b>'+data.length+'</b></h2>');
             $.each(data, function(i, train) {
                 trains[train.id] = train;
                 $.getJSON("get.php?a=getStops&p="+train.id, function(timetable) {
+                    var key = "";
                     let nextStation = "";
                     let lateSTR = "";
                     try {
@@ -66,24 +69,46 @@ function searchT(query) {
                             lateSTR += (station.arrival_diff == 1) ? " minuutti" : (station.arrival_diff>1) ? " minuuttia" : "";
                         }
                         else if (nextStation != "" && station.arrived != 0) nextStation = "";
-                        if (query.toLowerCase() == station.station.toLowerCase()) {
+                        if (query.toLowerCase() == station.station.toLowerCase() && station.train_stopping == 1) {
                             let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
-                            trainArrivalToQuery = "Saapuu asemalle "+station.station+" klo "+fixedArrival;
+                            trainArrivalToQuery = (fixedArrival)?"Saapuu asemalle "+station.station+" klo "+fixedArrival:"Lähtee asemalta "+station.station+" klo "+formatTimeHM(1*station.departure+(station.departure_diff*60));
+                            key = station.departure;
                         }
+                        if (timetable.length == i+1) trainsDone++;
                     });
+                    if (key == "") key = timetable[0].departure;
                     if (nextStation != "") {
                         let buttonOnClick = "window.location.href='?id="+train.id+"'";
                         let buttonSTR = '<button class="trainPicker" onclick="'+buttonOnClick+'">Valitse</button>';
                         if (futureTrain) {
+                            let dd = new Date(1000*key);
+                            let today = new Date(Date.now());
+                            var months = ["tammikuuta", "helmikuuta", "maaliskuuta", "huhtikuuta", "toukokuuta", "kesäkuuta", "heinäkuuta", "elokuuta", "syyskuuta", "lokakuuta", "marraskuuta", "joulukuuta"];
+                            let departureDateSTR = (today.getDate() == dd.getDate())?"Tänään":(dd.getDate()==today.getDate()+1)?"Huomenna":dd.getDate()+". "+months[dd.getMonth()]+" "+dd.getFullYear();
                             let fixedDeparture = formatTimeHM(1*timetable[0].departure+(timetable[0].departure_diff*60));
-                            $('main').append('<div class="searchResult" style="background:#EEE"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="xsmall">'+trainArrivalToQuery+'</p>'+buttonSTR+'</div>');
+                            trainSTR[key] = '<div class="searchResult" style="background:#EEE"><p class="xsmall">'+departureDateSTR+'</p><br><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="xsmall">'+trainArrivalToQuery+'</p>'+buttonSTR+'</div>';
                         }
-                        else $('main').append('<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p><p class="xsmall">'+trainArrivalToQuery+'</p>'+buttonSTR+'</div>');
+                        else trainSTR[key] = '<div class="searchResult"><p>'+train.train_type+train.id+' '+train.first_station+' - '+train.last_station+'</p><p>'+startT+' - '+endT+'</p><br><p class="small">Seuraava asema: '+nextStation+'</p><p class="xsmall">Nopeus: '+train.speed+'km/h'+lateSTR+'</p><p class="xsmall">'+trainArrivalToQuery+'</p>'+buttonSTR+'</div>';
+                        if (trainsDone == data.length) showResults();
+                        $('#result_i').text(trainsDone);
                     }
                 });
             });
+
         }
     });
+}
+
+function showResults() {
+    $('main').html("<h2 class='VRGreen'>Hakutulokset</h2>");
+    var keyIndexes = [];
+    for (key in trainSTR) {
+        keyIndexes.push(key);
+    }
+    keyIndexes.sort();
+    for (let i =0;i<Object.keys(trainSTR).length;i++) {
+        $('main').append(trainSTR[keyIndexes[i]]);
+    }
 }
 
 function showTrainMonitor(param) {
