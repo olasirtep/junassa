@@ -72,7 +72,7 @@ function searchT(query) {
                         if (query.toLowerCase() == station.station.toLowerCase() && station.train_stopping == 1) {
                             let fixedArrival = formatTimeHM(1*station.arrival+(station.arrival_diff*60));
                             trainArrivalToQuery = (fixedArrival)?"Saapuu asemalle "+station.station+" klo "+fixedArrival:"Lähtee asemalta "+station.station+" klo "+formatTimeHM(1*station.departure+(station.departure_diff*60));
-                            key = station.departure;
+                            key = (station.departure!=0)?station.departure:station.arrival;
                         }
                         if (timetable.length == i+1) trainsDone++;
                     });
