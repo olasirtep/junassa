@@ -152,61 +152,67 @@ def updateTimetables() :
 
 	for train in trains :
 		latestVersion = train["version"] if train["version"] > latestVersion else latestVersion
-		sql = "DELETE FROM timetables WHERE id = "+str(train["trainNumber"])	
-		cursor.execute(sql)
-		trainID = train["trainNumber"]	
-		departureTime = False
-		arrivalTime = False
-		departedTime = False
-		arrivedTime = False
-		order = 0
-		arrivalDiff = 0
-		departureDiff = 0
-		stops = len(train["timeTableRows"])/2
-		track = 0
+		
+		firstStation = train["timeTableRows"]
+		firstStation = firstStation[1]
+		departureTime = firstation["scheduledTime"]
+		departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
+		if (departureTime < updateTime+(24*60*60)):
+			sql = "DELETE FROM timetables WHERE id = "+str(train["trainNumber"])	
+			cursor.execute(sql)
+			trainID = train["trainNumber"]	
+			departureTime = False
+			arrivalTime = False
+			departedTime = False
+			arrivedTime = False
+			order = 0
+			arrivalDiff = 0
+			departureDiff = 0
+			stops = len(train["timeTableRows"])/2
+			track = 0
 
-		for station in train["timeTableRows"] :
-			if (departureTime != False and arrivalTime != False) :
-				departureTime = False
-				arrivalTime = False
-				departedTime = False
-				arrivedTime = False
-			try:
-				stationName = stations[station["stationShortCode"]]
-			# If there is no name for the shortcode found on the JSON, let's refresh our stations
-			except KeyError:
-				fetchMeta()
+			for station in train["timeTableRows"] :
+				if (departureTime != False and arrivalTime != False) :
+					departureTime = False
+					arrivalTime = False
+					departedTime = False
+					arrivedTime = False
 				try:
 					stationName = stations[station["stationShortCode"]]
-				# If the name still can't be found we skip to next station
+				# If there is no name for the shortcode found on the JSON, let's refresh our stations
 				except KeyError:
-					continue
-			arrivalTime = station["scheduledTime"] if station["type"] == "ARRIVAL" else arrivalTime
-			departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
-			arrivedTime = station.get('actualTime', "") if station["type"] == "ARRIVAL" else arrivedTime
-			departedTime = station.get('actualTime', "") if station["type"] == "DEPARTURE" else departedTime
-			arrivalDiff = station.get('differenceInMinutes', 0) if station["type"] == "ARRIVAL" else arrivalDiff
-			departureDiff = station.get('differenceInMinutes', 0) if station["type"] == "DEPARTURE" else departureDiff
-			longitude = stationLongitude[station["stationShortCode"]]
-			latitude = stationLatitude[station["stationShortCode"]]
-			stationASCII = stationName.replace("ä","a")
-			stationASCII = stationASCII.replace("ö","o")
-			stationASCII = stationASCII.replace("Ä","A")
-			stationASCII = stationASCII.replace("Ö","O")
-			track = station.get('commercialTrack', 0) if station.get('commercialTrack', 0) != '' else track
-			if (departureTime != False and arrivalTime != False or order == 0 or order == stops) :
-				arrivalTime = dp.parse(arrivalTime).strftime('%s') if arrivalTime else 0
-				departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
-				arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
-				departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
-				trainStopping = station["trainStopping"]
-				sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `track`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-				val = (trainID, stationName, stationASCII, trainStopping, track, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, updateTime)
-				order += 1
-				cursor.execute(sql,val)
-				db.commit()
-				departureTime = True
-				arrivalTime = True
+					fetchMeta()
+					try:
+						stationName = stations[station["stationShortCode"]]
+					# If the name still can't be found we skip to next station
+					except KeyError:
+						continue
+				arrivalTime = station["scheduledTime"] if station["type"] == "ARRIVAL" else arrivalTime
+				departureTime = station["scheduledTime"] if station["type"] == "DEPARTURE" else departureTime
+				arrivedTime = station.get('actualTime', "") if station["type"] == "ARRIVAL" else arrivedTime
+				departedTime = station.get('actualTime', "") if station["type"] == "DEPARTURE" else departedTime
+				arrivalDiff = station.get('differenceInMinutes', 0) if station["type"] == "ARRIVAL" else arrivalDiff
+				departureDiff = station.get('differenceInMinutes', 0) if station["type"] == "DEPARTURE" else departureDiff
+				longitude = stationLongitude[station["stationShortCode"]]
+				latitude = stationLatitude[station["stationShortCode"]]
+				stationASCII = stationName.replace("ä","a")
+				stationASCII = stationASCII.replace("ö","o")
+				stationASCII = stationASCII.replace("Ä","A")
+				stationASCII = stationASCII.replace("Ö","O")
+				track = station.get('commercialTrack', 0) if station.get('commercialTrack', 0) != '' else track
+				if (departureTime != False and arrivalTime != False or order == 0 or order == stops) :
+					arrivalTime = dp.parse(arrivalTime).strftime('%s') if arrivalTime else 0
+					departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
+					arrivedTime = dp.parse(arrivedTime).strftime('%s') if arrivedTime else 0
+					departedTime = dp.parse(departedTime).strftime('%s') if departedTime else 0
+					trainStopping = station["trainStopping"]
+					sql = "INSERT INTO `timetables`(`id`, `station`, `station_ASCII`, `train_stopping`, `track`, `arrival`, `departure`, `arrived`, `departed`, `arrival_diff`, `departure_diff`, `order`, `longitude`, `latitude`, `last_update`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+					val = (trainID, stationName, stationASCII, trainStopping, track, arrivalTime, departureTime, arrivedTime, departedTime, arrivalDiff, departureDiff, order, longitude, latitude, updateTime)
+					order += 1
+					cursor.execute(sql,val)
+					db.commit()
+					departureTime = True
+					arrivalTime = True
 
 
 def updateLocations():
