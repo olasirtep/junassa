@@ -155,9 +155,9 @@ def updateTimetables() :
 		
 		firstStation = train["timeTableRows"]
 		firstStation = firstStation[1]
-		departureTime = firstation["scheduledTime"]
+		departureTime = firstStation["scheduledTime"]
 		departureTime = dp.parse(departureTime).strftime('%s') if departureTime else 0
-		if (departureTime < updateTime+(24*60*60)):
+		if (float(departureTime) < updateTime+(24*60*60)):
 			sql = "DELETE FROM timetables WHERE id = "+str(train["trainNumber"])	
 			cursor.execute(sql)
 			trainID = train["trainNumber"]	
